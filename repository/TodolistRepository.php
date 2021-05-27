@@ -3,6 +3,7 @@
 namespace Repository {
 
     use Entity\Todolist;
+    use PDO;
 
     interface TodolistRepository
     {
@@ -14,9 +15,9 @@ namespace Repository {
     class TodolistRepositoryImpl implements TodolistRepository
     {
         public array $todolist = array();
-        private \PDO $connection;
+        private PDO $connection;
 
-        public function __construct(\PDO $connection)
+        public function __construct(PDO $connection)
         {
             // buat connection PDO, jadi nanti jika ingin membuat connection tinggal panggil $connection dari sini
             $this->connection = $connection;
@@ -24,8 +25,6 @@ namespace Repository {
 
         function save(Todolist $todolist): void
         {
-            // $number = sizeof($this->todolist) + 1;
-            // $this->todolist[$number] = $todolist;
             // kita bikin sql nya 
             $sql = "INSERT INTO todolist(todo) VALUES(?)";
             // pake preparestatement
@@ -36,20 +35,42 @@ namespace Repository {
 
         function remove(int $number): bool
         {
-            if ($number > sizeof($this->todolist)) {
-                return false;
-            }
-            for ($i = $number; $i < sizeof($this->todolist); $i++) {
-                $todolist[$i] = $this->todolist[$i + 1];
-            }
+            // kita cek dulu apakah id nya ada di database
+            $sql = "SELECT id FROM todolist WHERE id = ?";
+            $statement = $this->connection->prepare($sql);
+            $statement->execute([$number]);
 
-            unset($this->todolist[sizeof($this->todolist)]);
-
-            return true;
+            // jika script sql diatas balikannya ada datanya, berarti datanya ketemu
+            if ($statement->fetch()) {
+                // data todolist ada
+                $sql = "DELETE FROM todolist WHERE id = ?";
+                $statement = $this->connection->prepare($sql);
+                $statement->execute([$number]);
+                return true;
+            } else {
+                // data todolist tidak ada
+                return false; // sehingga tidak perlu melakukan delete
+            }
         }
         function findAll(): array
         {
-            return $this->todolist;
+            // kita melakukan query ke database, untuk mengambil data nya
+            $sql = "SELECT id, todo FROM todolist";
+            $statement = $this->connection->prepare($sql);
+            $statement->execute();
+
+            // kita harus balikannya adalah array of todolist
+            $result = [];
+
+            // iterasi hasil statement
+            foreach ($statement as $row) {
+                $todolist = new Todolist();
+                $todolist->setId($row['id']);
+                $todolist->setTodo($row['todo']);
+                // masukkan data todolist ke result array
+                $result[] = $todolist;
+            }
+            return $result;
         }
     }
 }

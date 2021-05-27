@@ -32,8 +32,9 @@ namespace Service {
             $todolist = $this->todolistRepository->findAll();
 
             // balikannya adalah todo
-            foreach ($this->todolistRepository as $number => $value) {
-                echo "$number. " . $value->getTodo() . PHP_EOL;
+            foreach ($todolist as $number => $value) {
+                // numbernya diganti dengan getId 
+                echo $value->getId() . " . " . $value->getTodo() . PHP_EOL;
             }
         }
 

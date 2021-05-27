@@ -4,8 +4,7 @@ namespace Entity {
 
     class Todolist
     {
-        // buat properti
-        // cuma butuh data todo nya
+        private int $id;
         private string $todo;
 
         // constructor, tapi optional parameternya
@@ -22,6 +21,14 @@ namespace Entity {
         public function setTodo(string $todo): void
         {
             $this->todo = $todo;
+        }
+        public function setId(int $id): void
+        {
+            $this->id = $id;
+        }
+        public function getId(): int
+        {
+            return $this->id;
         }
     }
 }
